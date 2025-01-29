@@ -37,14 +37,15 @@ const planets = planetData.map((planet, index) => {
     return mesh;
 });
 
-// Camera position
-camera.position.z = 30;
+// Adjust camera position to ensure planets are visible
+camera.position.z = 40;
 
 // Planet rotation and orbit
 let angle = 0;
 function animate() {
     requestAnimationFrame(animate);
-    
+
+    // Rotate the planets in their orbits
     angle += 0.01;
 
     planets.forEach((planet, index) => {
