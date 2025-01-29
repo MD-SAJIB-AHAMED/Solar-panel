@@ -4,37 +4,32 @@ const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('sola
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Add light sources
-const ambientLight = new THREE.AmbientLight(0x404040, 2); // Soft light
-scene.add(ambientLight);
+// Create a light source
+const light = new THREE.PointLight(0xFFFFFF, 1, 100);
+light.position.set(0, 0, 0);
+scene.add(light);
 
-const pointLight = new THREE.PointLight(0xFFFFFF, 1, 100);
-pointLight.position.set(0, 0, 0); // Sun's position
-scene.add(pointLight);
-
-// Sun (with texture)
+// Create a sun
 const sunGeometry = new THREE.SphereGeometry(2, 32, 32);
-const sunTexture = new THREE.TextureLoader().load('https://example.com/sun_texture.jpg'); // Replace with actual texture URL
-const sunMaterial = new THREE.MeshBasicMaterial({ map: sunTexture });
+const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFF00 });
 const sun = new THREE.Mesh(sunGeometry, sunMaterial);
 scene.add(sun);
 
-// Create planets with textures
+// Create planets with auto-adjusted sizes
 const planetData = [
-    { name: "Mercury", radius: 0.4, distance: 4, texture: 'https://example.com/mercury_texture.jpg' },
-    { name: "Venus", radius: 0.95, distance: 6, texture: 'https://example.com/venus_texture.jpg' },
-    { name: "Earth", radius: 1, distance: 8, texture: 'https://example.com/earth_texture.jpg' },
-    { name: "Mars", radius: 0.53, distance: 10, texture: 'https://example.com/mars_texture.jpg' },
-    { name: "Jupiter", radius: 11, distance: 15, texture: 'https://example.com/jupiter_texture.jpg' },
-    { name: "Saturn", radius: 9.5, distance: 18, texture: 'https://example.com/saturn_texture.jpg' },
-    { name: "Uranus", radius: 4, distance: 22, texture: 'https://example.com/uranus_texture.jpg' },
-    { name: "Neptune", radius: 3.8, distance: 25, texture: 'https://example.com/neptune_texture.jpg' }
+    { name: "Mercury", radius: 0.4, distance: 4 },
+    { name: "Venus", radius: 0.95, distance: 6 },
+    { name: "Earth", radius: 1, distance: 8 },
+    { name: "Mars", radius: 0.53, distance: 10 },
+    { name: "Jupiter", radius: 11, distance: 15 },
+    { name: "Saturn", radius: 9.5, distance: 18 },
+    { name: "Uranus", radius: 4, distance: 22 },
+    { name: "Neptune", radius: 3.8, distance: 25 }
 ];
 
 const planets = planetData.map((planet, index) => {
     const geometry = new THREE.SphereGeometry(planet.radius, 32, 32);
-    const texture = new THREE.TextureLoader().load(planet.texture);
-    const material = new THREE.MeshStandardMaterial({ map: texture });
+    const material = new THREE.MeshBasicMaterial({ color: getRandomColor() });
     const mesh = new THREE.Mesh(geometry, material);
     mesh.position.x = planet.distance;
     mesh.name = planet.name;
@@ -42,9 +37,10 @@ const planets = planetData.map((planet, index) => {
     return mesh;
 });
 
-// Camera setup
+// Adjust camera to fit everything and make it responsive
 let cameraDistance = 50;
 function updateCamera() {
+    // Calculate camera distance based on window size
     const aspectRatio = window.innerWidth / window.innerHeight;
     const maxDistance = Math.max(...planetData.map(planet => planet.distance)) * 1.5;
     camera.position.z = Math.max(cameraDistance, maxDistance);
@@ -59,18 +55,17 @@ window.addEventListener('resize', () => {
 
 updateCamera();
 
-// Planet rotation and orbit in 3D
+// Planet rotation and orbit
 let angle = 0;
 function animate() {
     requestAnimationFrame(animate);
 
+    // Rotate the planets in their orbits
     angle += 0.01;
 
     planets.forEach((planet, index) => {
-        const orbitAngle = angle * (index + 1); // Different orbit speeds
-        planet.position.x = planetData[index].distance * Math.cos(orbitAngle);
-        planet.position.z = planetData[index].distance * Math.sin(orbitAngle);
-        planet.rotation.y += 0.01; // Rotation of planet itself
+        planet.position.x = planetData[index].distance * Math.cos(angle * (index + 1));
+        planet.position.z = planetData[index].distance * Math.sin(angle * (index + 1));
     });
 
     renderer.render(scene, camera);
@@ -90,3 +85,13 @@ planets.forEach(planet => {
         planetDetails.textContent = `Distance from Sun: ${planet.userData.distance} million km`;
     });
 });
+
+// Utility function to generate random planet colors
+function getRandomColor() {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
